@@ -1,0 +1,39 @@
+{
+  "name": "apollo-compose",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "nps git.clone.all",
+    "start": "nps",
+    "interactive": "nps-i"
+  },
+  "author": {
+    "name": "Kevin Groat",
+    "email": "apps@kevingroat.io",
+    "url": "https://github.com/kgroat"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@types/js-yaml": "^3.11.2",
+    "@types/lodash": "^4.14.116",
+    "@types/node": "^10.9.4",
+    "@types/through2": "^2.0.34",
+    "@types/yargs": "^11.1.1",
+    "chalk": "^2.4.1",
+    "cli-spinner": "^0.2.8",
+    "js-yaml": "^3.12.0",
+    "lodash": "^4.17.11",
+    "nps": "^5.9.3",
+    "nps-i": "^1.0.2",
+    "nps-utils": "^1.7.0",
+    "opn": "^5.3.0",
+    "split": "^1.0.1",
+    "strip-ansi": "^4.0.0",
+    "through2": "^2.0.3",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.0.3",
+    "yargs": "^12.0.2"
+  }
+}
