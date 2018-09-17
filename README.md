@@ -50,12 +50,16 @@ $ npm run interactive
   * The `nginx.conf` lives in docker-support.
 * `database`
   * A `mongodb` database only available to the `server` container.
-  * Does **not** expose a public port.
+  * Does **not** expose a public port; only available on the `db` docker-compose network.
 
 ### More info & development
 For more information about how to develop the container applications, you can see the readme's for:
 * `server` - [apollo-graphql-starter](https://github.com/kgroat/apollo-graphql-starter)
 * `client` - [apollo-react-starter](https://github.com/kgroat/apollo-react-starter)
+
+If you want to use the [GraphQL for VSCode](https://marketplace.visualstudio.com/items?itemName=kumar-harsh.graphql-for-vscode#overview) plugin, and you want to have a multi-folder workspace, ensure that the `client` project is the first folder in the workspace.  It should look something like this:
+
+![Workspace example](./.assets/workspace.png)
 
 ## Using this as a starter project
 Once you've cloned the project, most of the information about each container can be found in [config/containers.ts](./config/containers.ts) or [config/containerProfiles.ts](./config/containerProfiles.ts).  The rest of this repository is largely supporting scripts or files that get added to the containers.
