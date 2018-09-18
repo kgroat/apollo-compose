@@ -1,7 +1,8 @@
 
-import { spawn } from 'child_process'
-import { join } from 'path'
+import { spawn, execSync } from 'child_process'
+import { join, basename } from 'path'
 import * as through from 'through2'
+import chalk from 'chalk'
 
 import { containerNames, containers } from '../config/containers'
 
@@ -13,6 +14,7 @@ const { Spinner } = require('cli-spinner')
 const spinner = new Spinner('Waiting for containers... %s')
 const opn = require('opn')
 
+const projectDir = basename(join(__dirname, '..'))
 let startCount = 0
 const startMessages: { [key: string]: string } = {}
 containerNames.forEach(name => {
@@ -34,14 +36,17 @@ const child = spawn('docker-compose', ['up'], {
 child.stdout
   .pipe(split())
   .pipe(through(function (lineBuffer, _, next) {
-    checkForDone(lineBuffer.toString())
+    const line = lineBuffer.toString()
+    checkForDone(line)
+    checkForExit(line)
     if (startsDone.length >= startCount) {
       done()
     }
     next()
   }))
 
-const procRgx = /^([^_]+)[^|]*\|(.+)$/ // "container_1  | some message here"
+// "container_1  | some message here"
+const procRgx = /^([^_]+)[^|]*\|(.+)$/
 function checkForDone (line: string) {
   const match = procRgx.exec(stripAnsi(line))
 
@@ -66,10 +71,43 @@ function checkForDone (line: string) {
 
   // match if the line contains the target text
   if (message.indexOf(startMessage) >= 0) {
-    spinner.stop(true)
-    console.log(`Container ${containerName} started!`)
-    spinner.start()
+    log(`Container ${containerName} started!`)
     startsDone.push(containerName)
+  }
+}
+
+// apollo-compose_client_1 exited with code 1
+const exitRgx = new RegExp(`${projectDir}_(.+)_\\d+ exited with code (\\d+)`)
+function checkForExit (ansiLine: string) {
+  const line = stripAnsi(ansiLine)
+  const match = exitRgx.exec(line)
+
+  // only match lines in the format above
+  if (!match) {
+    return
+  }
+
+  const [_, containerName, exitCodeStr] = match
+
+  const exitCode = parseInt(exitCodeStr, 10)
+  const message = `Container ${containerName} exited with code ${exitCode}`
+
+  if (exitCode > 0) {
+    spinner.stop(true)
+    console.error(chalk.bold.red(`Something went wrong with container "${containerName}"`))
+    console.error(chalk.red(message))
+    console.error()
+    console.error(chalk.bold.yellow(`For more information run:`))
+    console.error(chalk.yellow(`docker-compose logs ${containerName}`))
+    console.error('\n')
+    process.exit(exitCode)
+  } else if (containerName in startMessages) {
+    log(
+      chalk.yellow(`Unexpected container exit:`),
+      chalk.yellow(message),
+    )
+  } else {
+    log(message)
   }
 }
 
@@ -86,6 +124,12 @@ function done () {
   opn('http://localhost/', { wait: false }).then(() => {
     process.exit(0)
   })
+}
+
+function log (...lines: string[]) {
+  spinner.stop(true)
+  lines.forEach(line => console.log(line))
+  spinner.start()
 }
 
 spinner.start()
